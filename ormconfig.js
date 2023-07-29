@@ -1,0 +1,36 @@
+module.exports = {
+  type: `${process.env.TYPEORM_DB_CONNECTION}`,
+  host: `${process.env.TYPEORM_DB_HOST}`,
+  database: `${process.env.TYPEORM_DB_NAME}`,
+  username: `${process.env.TYPEORM_DB_USERNAME}`,
+  password: `${process.env.TYPEORM_DB_PASSWORD}`,
+  port: process.env.TYPEORM_DB_PORT,
+  conectionString:
+    'mysql://${{ root }}:${{ dyKP2KBUBpeIyIzAAQnm }}@${{ containers-us-west-173.railway.app }}:${{ containers-us-west-173.railway.app }}/${{ containers-us-west-173.railway.app }}',
+  options: {
+    encrypt: true,
+    enableArithAbort: true,
+  },
+  synchronize: false,
+  logging: ['error'],
+  entities: ['src/entity/**/*.ts', 'build/entity/**/*.js'],
+  migrations: ['src/migration/**/*.ts', 'build/migration/**/*.js'],
+  migrationsTableName: 'custom_migration_table',
+  subscribers: ['src/subscriber/**/*.ts', 'build/subscriber/**/*.js'],
+  cli: {
+    entitiesDir: ['src/entity', 'build/entity'],
+    migrationsDir: ['src/migration', 'build/migration'],
+    subscribersDir: ['src/subscriber', 'build/subscriber'],
+  },
+  extra: {
+    homogeneous: true,
+    poolAlias: 'default',
+    poolIncrement: 1,
+    poolMax: 10,
+    poolMin: 0,
+    poolPingInterval: 60,
+    poolSize: 10,
+    poolTimeout: 60 * 60 * 1000,
+    trustServerCertificate: true,
+  },
+}
