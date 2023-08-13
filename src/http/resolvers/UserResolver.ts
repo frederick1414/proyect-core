@@ -10,12 +10,10 @@ import {
   RegisterUserInput,
   UpdateUserInput,
 } from '../types/UserType'
-import { GraphQLUpload } from 'graphql-upload'
 import { isAuth } from '../../helpers/authFunc'
 import {
   ACTIVE_GLOBAL,
   INACTIVE_GLOBAL,
-  MAIN_FILE_PATH,
 } from '../../config/constants'
 import { EncriptPass } from '../../helpers/passwordFunc'
 
@@ -37,9 +35,9 @@ export class UserResolver {
     @Ctx('user') user: SessionData
   ): Promise<User | Error> {
     try {
-      // if (!isAuth(user)) return AuthorizationError;
+      if (!isAuth(user)) return AuthorizationError;
 
-      const { USERNAME, PASSWORD } = newUser
+      const { USERNAME, /*PASSWORD */} = newUser
 
       let pathFile = null
 
@@ -51,7 +49,7 @@ export class UserResolver {
 
       if (userExist) return Error(`User '${USERNAME}' is already registered.`)
 
-      newUser.PASSWORD = await EncriptPass(PASSWORD)
+      // newUser.PASSWORD = await EncriptPass(PASSWORD)
 
       const userData = {
         ...newUser,
@@ -96,6 +94,8 @@ export class UserResolver {
       if (userUpdate.PASSWORD?.length >= 1) {
         userUpdate.PASSWORD = await EncriptPass(userUpdate.PASSWORD)
       }
+
+      
 
       // validar row
       const exist = await getUserRepository().find({
