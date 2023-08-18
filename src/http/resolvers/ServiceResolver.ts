@@ -43,10 +43,10 @@ export class ServiceResolver {
         try {
             if (!isAuth(user)) return AuthorizationError
 
-            const userInfo = await getServiceRepo().find(condition)
+            const response = await getServiceRepo().find(condition)
 
 
-            return userInfo
+            return response
         } catch (e) {
             console.log(`${ERR_LOG_QUERY} GetService: ${e}`)
             return new ApiGraphqlError(

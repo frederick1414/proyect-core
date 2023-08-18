@@ -1,5 +1,6 @@
-import { Field, Int, ObjectType } from 'type-graphql'
-import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Field, ObjectType } from 'type-graphql'
+
 import BaseEntity from './BaseEntity'
 
 @ObjectType({
@@ -97,4 +98,12 @@ export class User extends BaseEntity<User> {
   })
   @Column({ type: 'varchar', length: 100 })
   UPDATED_USER: string
+
+  @Field({
+    nullable: true,
+    description: '',
+  })
+  @Column({ type: 'varchar', length: 100 })
+  PHONE: string
+
 }

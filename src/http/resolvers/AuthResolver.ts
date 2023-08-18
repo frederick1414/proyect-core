@@ -49,12 +49,17 @@ export class AuthResolver {
       delete user[0].PASSWORD
 
       /* Generating a token. */
+        
       const token = generateToken({
         id: user[0].USER_ID,
         username: user[0].USERNAME,
         email: user[0].EMAIL,
         name: '', // user[0].NAME + ' ' + user[0].LASTNAME,
         businessId: user[0].BUSINESS_ID,
+        // phone:user[0].PHONE
+
+        
+
         // roles: _roles,
       })
 

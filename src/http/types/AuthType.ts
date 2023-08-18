@@ -1,4 +1,5 @@
-import { InputType, Field, ObjectType } from "type-graphql";
+import { Field, InputType, ObjectType } from "type-graphql";
+
 import { User } from "../../entity/User";
 
 @InputType({ description: "Login input" })
