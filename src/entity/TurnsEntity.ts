@@ -13,14 +13,14 @@ export class Turns extends BaseEntity<Turns> {
         description: '',
     })
     @PrimaryGeneratedColumn('uuid')
-    TURN_ID: string
+    TURN_ID?: string
 
     @Field({
         nullable: true,
         description: '',
     })
     @Column({ type: 'varchar', length: 255 })
-    EMPLOYEE_ID: string
+    EMPLOYEE_ID?: string
 
 
     @Field({
@@ -28,21 +28,21 @@ export class Turns extends BaseEntity<Turns> {
         description: '',
     })
     @Column({ type: 'varchar', length: 255 })
-    USER_ID: string
+    USER_ID?: string
 
     @Field({
         nullable: true,
         description: '',
     })
     @Column({ type: 'varchar', length: 255 })
-    SERVICE_ID: string
+    SERVICE_ID?: string
 
     @Field({
         nullable: true,
         description: '',
     })
     @Column({ type: 'char', length: 1 })
-    ESTATUS: string
+    ESTATUS?: string
 
 
     @Field({
@@ -50,36 +50,36 @@ export class Turns extends BaseEntity<Turns> {
         description: '',
     })
     @Column({ type: 'datetime', insert: true, update: false })
-    TIME: Date
+    TIME?: Date
 
     @Field({
         nullable: true,
         description: '',
     })
     @Column({ type: 'varchar', length: 100 })
-    PHONE: string
+    PHONE?: string
 
     @Field({
         nullable: true,
         description: '',
     })
     @Column({ type: 'datetime', insert: true, update: false })
-    CREATE_DATE: Date
+    CREATE_DATE?: Date
 
     @Field({
         nullable: true,
         description: '',
     })
-    @Column({ type: 'datetime', insert: false, update: true })
-    UPDATE_DATE: Date
+    @Column({ type: 'datetime',nullable:true })
+    UPDATE_DATE?: Date
 
 
     @Field({
         nullable: true,
         description: '',
     })
-    @Column({ type: 'datetime', insert: false, update: true })
-    BUSINESS_ID: Date
+    @Column({ type: 'varchar', nullable:false })
+    BUSINESS_ID: string
 
 
     @Field({

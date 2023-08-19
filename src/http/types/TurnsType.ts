@@ -7,52 +7,52 @@ export class QueryTurnsInput {
   @Field({
     nullable: true,
   })
-  TURN_ID: string
+  TURN_ID?: string
 
   @Field({
     nullable: true,
   })
-  EMPLOYEE_ID: string
+  EMPLOYEE_ID?: string
 
   @Field({
     nullable: true,
   })
-  USER_ID: string
+  USER_ID?: string
 
   @Field({
     nullable: true,
   })
-  SERVICE_ID: string
+  SERVICE_ID?: string
 
   @Field({
     nullable: true,
   })
-  ESTATUS: string
+  ESTATUS?: string
 
   @Field({
     nullable: true,
   })
-  TIME: Date
+  TIME?: Date
 
   @Field({
     nullable: true,
   })
-  PHONE: string
+  PHONE?: string
 
   @Field({
     nullable: true,
   })
-  CREATE_DATE: Date
+  CREATE_DATE?: Date
 
   @Field({
     nullable: true,
   })
-  UPDATE_DATE: Date
+  UPDATE_DATE?: Date
 
   @Field({
     nullable: true,
   })
-  BUSINESS_ID: Date
+  BUSINESS_ID?: string
 
   @Field({
     nullable: true,
