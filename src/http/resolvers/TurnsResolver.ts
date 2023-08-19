@@ -6,8 +6,8 @@ import { SessionData } from "../../constants/generalTypes"
 import { AuthorizationError, ApiGraphqlError } from "../../helpers/apiFunc"
 import { isAuth } from "../../helpers/authFunc"
 import { Turns } from "../../entity/TurnsEntity"
-import { QueryTurnsInput } from "../types/TurnsType"
-import { ACTIVE_GLOBAL, HOUR, ONE, SECOND } from "../../config/constants"
+import { QueryTurnsInput, UpdateTurnsResponse } from "../types/TurnsType"
+import { ACTIVE_GLOBAL, EN_ESPERA, HOUR, ONE, SECOND } from "../../config/constants"
 import { addMinutes } from "date-fns"
 
 /**
@@ -64,12 +64,14 @@ export class TurnsResolver {
       const { businessId: BUSINESS_ID } = user
 
       const currentTime = new Date();
-      const newTime = addMinutes(currentTime, WAITING_TIME || 30); // Sumar 30 minutos a la hora actual
 
       console.log('user', BUSINESS_ID)
-      const response = await getTurnsRepo().find({ BUSINESS_ID })
+      const response = await getTurnsRepo().find({BUSINESS_ID})
       console.log('response', response)
 
+      if (response instanceof Error) {
+        return Error('error')
+      }
 
       if (response) {
 
@@ -91,32 +93,76 @@ export class TurnsResolver {
           }
         }
 
-        console.log('maxTurnId',maxTurnId)
+        console.log('maxTurnId', maxTurnId)
 
         // Sumamos 30 minutos al TIME más alto
         const nextTime = new Date(maxTime.getTime() + WAITING_TIME * HOUR * SECOND); // 30 minutos en milisegundos
         const turnsData = {
           ...condition,
           TURN_ID: (maxTurnId + ONE).toString(),
-          ESTATUS: ACTIVE_GLOBAL,
+          ESTATUS: EN_ESPERA,
           CREATE_DATE: currentTime,
           CREATED_USER: user?.username || 'TEST',
-          TIME: response ? nextTime : new Date(),
-          BUSINESS_ID,
-
-
+          TIME: response.length ? nextTime : new Date(),
+          BUSINESS_ID: BUSINESS_ID || '001',
+          USERNAME: user.username
         };
 
         const data = await getTurnsRepo().insert(turnsData);
 
         const result = await getTurnsRepo().find(data.identifiers[0]);
-/////validar jd emr=presa null
+        /////validar jd emr=presa null
 
         return result[0];
       }
 
     } catch (e) {
       console.log(`${ERR_LOG_MUTATION} Register: ${e}`);
+      return new ApiGraphqlError(
+        HTTP_STATUS_BAD_REQUEST,
+        'Error creating user.',
+        e?.message
+      );
+    }
+  }
+
+
+
+  @Mutation(() => Turns, {
+    description: 'User Registration',
+  })
+  async UpdateTurns(
+    @Arg('condition', () => QueryTurnsInput, {
+      description: 'condition para update',
+    })
+    condition: QueryTurnsInput,
+    @Ctx('user') user: SessionData
+  ): Promise<UpdateTurnsResponse | Error> {
+    try {
+      if (!isAuth(user)) return AuthorizationError;
+
+      const updateData = {
+        ...condition,
+        UPDATED_USER: user.username,
+        UPDATE_DATE: new Date(),
+      }
+
+      const data = await getTurnsRepo().update(
+        {
+          TURN_ID: condition.TURN_ID
+        },
+        { ...updateData }
+      )
+
+      if (data instanceof Error) {
+        return Error('Error al actualizar turnos')
+      }
+
+
+      return updateData;
+
+    } catch (e) {
+      console.log(`${ERR_LOG_MUTATION} Update: ${e}`);
       return new ApiGraphqlError(
         HTTP_STATUS_BAD_REQUEST,
         'Error creating user.',
