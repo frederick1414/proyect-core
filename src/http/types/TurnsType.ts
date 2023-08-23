@@ -12,6 +12,11 @@ export class QueryTurnsInput {
   @Field({
     nullable: true,
   })
+  TYPE_TRANS?: string
+  
+  @Field({
+    nullable: true,
+  })
   EMPLOYEE_ID?: string
 
   @Field({
@@ -55,9 +60,9 @@ export class QueryTurnsInput {
   BUSINESS_ID?: string
 
   @Field({
-    nullable: true,
+    nullable: false,
   })
-  WAITING_TIME?: number
+  WAITING_TIME: number
 
 
   @Field({
@@ -69,7 +74,7 @@ export class QueryTurnsInput {
   @Field({
     nullable: true,
   })
-  UPDATED_USER?:string
+  UPDATED_USER?: string
 
 
 }
@@ -145,6 +150,17 @@ export class UpdateTurnsResponse {
   @Field({
     nullable: true,
   })
-  UPDATED_USER?:string
+  UPDATED_USER?: string
 
+}
+
+@ObjectType({
+  description: 'para update Turns',
+})
+export class GetMaxTurnResponse {
+
+  @Field({
+    nullable: true,
+  })
+  SECUENCIA?: string
 }

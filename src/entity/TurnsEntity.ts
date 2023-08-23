@@ -19,6 +19,13 @@ export class Turns extends BaseEntity<Turns> {
         nullable: true,
         description: '',
     })
+    @Column({ type: 'varchar', length: 10 })
+    TYPE_TRANS?: string
+
+    @Field({
+        nullable: true,
+        description: '',
+    })
     @Column({ type: 'varchar', length: 255 })
     EMPLOYEE_ID?: string
 
@@ -70,7 +77,7 @@ export class Turns extends BaseEntity<Turns> {
         nullable: true,
         description: '',
     })
-    @Column({ type: 'datetime',nullable:true })
+    @Column({ type: 'datetime', nullable: true })
     UPDATE_DATE?: Date
 
 
@@ -78,7 +85,7 @@ export class Turns extends BaseEntity<Turns> {
         nullable: true,
         description: '',
     })
-    @Column({ type: 'varchar', nullable:false })
+    @Column({ type: 'varchar', nullable: false })
     BUSINESS_ID: string
 
 
@@ -102,6 +109,6 @@ export class Turns extends BaseEntity<Turns> {
         description: '',
     })
     @Column({ type: 'varchar' })
-    USERNAME?:string
+    USERNAME?: string
 
 }

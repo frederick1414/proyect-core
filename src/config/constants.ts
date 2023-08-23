@@ -9,3 +9,4 @@ export const GEN_SALT = 20
 export const ONE = 1
 export const HOUR = 60
 export const SECOND = 1000
+export const ID_TIPO_TRANS_TURN = 'TURN'

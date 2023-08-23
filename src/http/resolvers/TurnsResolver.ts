@@ -7,7 +7,7 @@ import { AuthorizationError, ApiGraphqlError } from "../../helpers/apiFunc"
 import { isAuth } from "../../helpers/authFunc"
 import { Turns } from "../../entity/TurnsEntity"
 import { QueryTurnsInput, UpdateTurnsResponse } from "../types/TurnsType"
-import { ACTIVE_GLOBAL, EN_ESPERA, HOUR, ONE, SECOND } from "../../config/constants"
+import { ACTIVE_GLOBAL, EN_ESPERA, HOUR, ID_TIPO_TRANS_TURN, ONE, SECOND } from "../../config/constants"
 import { addMinutes } from "date-fns"
 
 /**
@@ -65,53 +65,50 @@ export class TurnsResolver {
 
       const currentTime = new Date();
 
-      console.log('user', BUSINESS_ID)
-      const response = await getTurnsRepo().find({BUSINESS_ID})
-      console.log('response', response)
-
+      const response = await getTurnsRepo().find({ BUSINESS_ID, TYPE_TRANS: ID_TIPO_TRANS_TURN })
       if (response instanceof Error) {
         return Error('error')
       }
 
       if (response) {
 
-        let maxTurnId = 0; // Suponiendo que los IDs son números positivos
-        let maxTime = new Date();  // Una fecha muy antigua como punto de partida
-        console.log('newDate', maxTime)
+        let maxTurnId = 0;
+        let maxTime = new Date();
 
-        // Recorremos la lista de registros para encontrar el TURN_ID más alto
         for await (const turn of response) {
-          const currentTurnId = parseInt(turn.TURN_ID); // Convertimos a número
-          const currentTurnTime = new Date(turn.TIME); // Convertimos a objeto Date
+          const currentTurnId = parseInt(turn.TURN_ID);
+          if (turn.ESTATUS === EN_ESPERA) {
+            const currentTurnTime = new Date(turn.TIME);
+
+            if (currentTurnTime > maxTime) {
+              maxTime = currentTurnTime;
+            }
+          }
 
           if (currentTurnId > maxTurnId) {
             maxTurnId = currentTurnId;
           }
 
-          if (currentTurnTime > maxTime) {
-            maxTime = currentTurnTime;
-          }
         }
 
-        console.log('maxTurnId', maxTurnId)
 
-        // Sumamos 30 minutos al TIME más alto
-        const nextTime = new Date(maxTime.getTime() + WAITING_TIME * HOUR * SECOND); // 30 minutos en milisegundos
+        const nextTime = new Date(maxTime.getTime() + WAITING_TIME * HOUR * SECOND); 
+        const ESTATUS_ACTIVE = response.find((x) => x.ESTATUS === EN_ESPERA)
         const turnsData = {
           ...condition,
           TURN_ID: (maxTurnId + ONE).toString(),
           ESTATUS: EN_ESPERA,
           CREATE_DATE: currentTime,
           CREATED_USER: user?.username || 'TEST',
-          TIME: response.length ? nextTime : new Date(),
+          TIME: ESTATUS_ACTIVE ? nextTime : new Date(),
           BUSINESS_ID: BUSINESS_ID || '001',
-          USERNAME: user.username
+          USERNAME: user.username,
+          TYPE_TRANS: ID_TIPO_TRANS_TURN
         };
 
         const data = await getTurnsRepo().insert(turnsData);
 
         const result = await getTurnsRepo().find(data.identifiers[0]);
-        /////validar jd emr=presa null
 
         return result[0];
       }
@@ -125,7 +122,6 @@ export class TurnsResolver {
       );
     }
   }
-
 
 
   @Mutation(() => Turns, {
