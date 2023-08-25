@@ -13,7 +13,7 @@ export class QueryTurnsInput {
     nullable: true,
   })
   TYPE_TRANS?: string
-  
+
   @Field({
     nullable: true,
   })
@@ -60,9 +60,9 @@ export class QueryTurnsInput {
   BUSINESS_ID?: string
 
   @Field({
-    nullable: false,
+    nullable: true,
   })
-  WAITING_TIME: number
+  WAITING_TIME?: number
 
 
   @Field({
@@ -80,6 +80,35 @@ export class QueryTurnsInput {
 }
 
 
+@InputType({
+  description: 'para Insertar Turns',
+})
+export class InserTurnsInput extends QueryTurnsInput {
+
+  @Field({
+    nullable: false,
+  })
+  WAITING_TIME: number
+
+
+}
+
+
+@InputType({
+  description: 'para Consultar Range Turns',
+})
+export class QueryTurnsRangeInput extends QueryTurnsInput {
+
+  @Field({
+    nullable: true,
+  })
+  FECHA_DESDE?: Date
+
+  @Field({
+    nullable: true,
+  })
+  FECHA_HASTA?: Date
+}
 
 @ObjectType({
   description: 'para update Turns',

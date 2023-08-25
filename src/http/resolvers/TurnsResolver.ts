@@ -1,12 +1,12 @@
 import { Resolver, Query, Arg, Ctx, Mutation } from "type-graphql"
-import { Repository, getRepository } from "typeorm"
+import { Between, MoreThan, Repository, getRepository } from "typeorm"
 import { ERR_LOG_MUTATION, ERR_LOG_QUERY } from "../../config/generalErrors"
 import { HTTP_STATUS_BAD_REQUEST } from "../../config/statusCode"
 import { SessionData } from "../../constants/generalTypes"
 import { AuthorizationError, ApiGraphqlError } from "../../helpers/apiFunc"
 import { isAuth } from "../../helpers/authFunc"
 import { Turns } from "../../entity/TurnsEntity"
-import { QueryTurnsInput, UpdateTurnsResponse } from "../types/TurnsType"
+import { InserTurnsInput, QueryTurnsInput, QueryTurnsRangeInput, UpdateTurnsResponse } from "../types/TurnsType"
 import { ACTIVE_GLOBAL, EN_ESPERA, HOUR, ID_TIPO_TRANS_TURN, ONE, SECOND } from "../../config/constants"
 import { addMinutes } from "date-fns"
 
@@ -33,7 +33,12 @@ export class TurnsResolver {
     try {
       if (!isAuth(user)) return AuthorizationError
 
-      const response = await getTurnsRepo().find(condition)
+      const response = await getTurnsRepo().find({
+        where:{...condition},
+        order:{
+          TIME:'ASC'
+        }
+      })
 
       return response
     } catch (e) {
@@ -60,7 +65,7 @@ export class TurnsResolver {
     try {
       if (!isAuth(user)) return AuthorizationError;
 
-      const { WAITING_TIME } = condition
+      const { WAITING_TIME, TIME } = condition
       const { businessId: BUSINESS_ID } = user
 
       const currentTime = new Date();
@@ -92,7 +97,7 @@ export class TurnsResolver {
         }
 
 
-        const nextTime = new Date(maxTime.getTime() + WAITING_TIME * HOUR * SECOND); 
+        const nextTime = new Date(maxTime.getTime() + WAITING_TIME * HOUR * SECOND);
         const ESTATUS_ACTIVE = response.find((x) => x.ESTATUS === EN_ESPERA)
         const turnsData = {
           ...condition,
@@ -100,7 +105,7 @@ export class TurnsResolver {
           ESTATUS: EN_ESPERA,
           CREATE_DATE: currentTime,
           CREATED_USER: user?.username || 'TEST',
-          TIME: ESTATUS_ACTIVE ? nextTime : new Date(),
+          TIME: TIME ? TIME : ESTATUS_ACTIVE ? nextTime : new Date(),
           BUSINESS_ID: BUSINESS_ID || '001',
           USERNAME: user.username,
           TYPE_TRANS: ID_TIPO_TRANS_TURN
@@ -162,6 +167,51 @@ export class TurnsResolver {
       return new ApiGraphqlError(
         HTTP_STATUS_BAD_REQUEST,
         'Error creating user.',
+        e?.message
+      );
+    }
+  }
+
+  @Query(() => [Turns], {
+    description: 'Consultar Empleadoa',
+  })
+  async GetTurnsRange(
+    @Arg('condition', () => QueryTurnsRangeInput, {
+      description: 'query Turns argument.',
+      nullable: true,
+    })
+    condition: QueryTurnsRangeInput,
+    @Ctx('user') user: SessionData
+  ): Promise<Turns[] | Error> {
+    try {
+      if (!isAuth(user)) return AuthorizationError;
+
+      let response;
+
+      if (condition && condition.FECHA_DESDE && condition.FECHA_HASTA) {
+        // Filtrar por rango de fechas
+        response = await getTurnsRepo().find({
+          where: {
+            CREATE_DATE: Between(condition.FECHA_DESDE, condition.FECHA_DESDE),
+          },
+        });
+      } else {
+        // Filtrar por registros del día
+        const fechaHoy = new Date();
+        fechaHoy.setHours(0, 0, 0, 0);
+        response = await getTurnsRepo().find({
+          where: {
+            CREATE_DATE: MoreThan(fechaHoy),
+          },
+        });
+      }
+
+      return response;
+    } catch (e) {
+      console.log(`${ERR_LOG_QUERY} GetTurns: ${e}`);
+      return new ApiGraphqlError(
+        HTTP_STATUS_BAD_REQUEST,
+        'Error when consulting user information.',
         e?.message
       );
     }
