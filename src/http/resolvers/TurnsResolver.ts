@@ -34,9 +34,9 @@ export class TurnsResolver {
       if (!isAuth(user)) return AuthorizationError
 
       const response = await getTurnsRepo().find({
-        where:{...condition},
-        order:{
-          TIME:'ASC'
+        where: { ...condition },
+        order: {
+          TIME: 'ASC'
         }
       })
 
@@ -70,7 +70,7 @@ export class TurnsResolver {
 
       const currentTime = new Date();
 
-      const response = await getTurnsRepo().find({ BUSINESS_ID, TYPE_TRANS: ID_TIPO_TRANS_TURN })
+      const response = await this.GetTurnsRange({ BUSINESS_ID, TYPE_TRANS: ID_TIPO_TRANS_TURN }, user)
       if (response instanceof Error) {
         return Error('error')
       }
@@ -195,6 +195,7 @@ export class TurnsResolver {
             ...condition,
             CREATE_DATE: Between(condition.FECHA_DESDE, condition.FECHA_DESDE),
           },
+          order:{TIME:'ASC'}
         });
       } else {
         // Filtrar por registros del día
@@ -205,6 +206,7 @@ export class TurnsResolver {
             ...condition,
             CREATE_DATE: MoreThan(fechaHoy),
           },
+          order:{TIME:'ASC'}
         });
       }
 
