@@ -59,5 +59,11 @@ export class Service extends BaseEntity<Service> {
   @Column({ type: 'varchar', length: 10 })
   EMPLOYEE_ID: string
 
+  @Field({
+    nullable: true,
+    description: 'MONTO DEL SERVICIO',
+  })
+  @Column({ type: 'varchar', length: 200 })
+  AMOUNT?:string
 
 }

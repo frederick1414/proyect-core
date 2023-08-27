@@ -77,6 +77,11 @@ export class QueryTurnsInput {
   UPDATED_USER?: string
 
 
+  @Field({
+    nullable: true,
+  })
+  AMOUNT?: number
+
 }
 
 

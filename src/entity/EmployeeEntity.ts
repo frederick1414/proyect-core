@@ -77,7 +77,7 @@ export class Employees extends BaseEntity<Employees> {
         nullable: true,
     })
     @Column({ type: 'char', })
-    STATUS?: string
+    ESTATUS?: string
 
 
     @Field({

@@ -62,7 +62,7 @@ export class QueryEmployeesInput {
     @Field({
         nullable: true,
     })
-    STATUS?: string
+    ESTATUS?: string
 
     @Field({
         nullable: true,

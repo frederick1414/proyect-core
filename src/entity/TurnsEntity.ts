@@ -111,4 +111,11 @@ export class Turns extends BaseEntity<Turns> {
     @Column({ type: 'varchar' })
     USERNAME?: string
 
+
+    @Field({
+        nullable: true,
+        description: '',
+    })
+    @Column({ type: 'int' })
+    AMOUNT?: number
 }

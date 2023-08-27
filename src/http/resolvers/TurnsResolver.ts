@@ -107,7 +107,7 @@ export class TurnsResolver {
           CREATED_USER: user?.username || 'TEST',
           TIME: TIME ? TIME : ESTATUS_ACTIVE ? nextTime : new Date(),
           BUSINESS_ID: BUSINESS_ID || '001',
-          USERNAME: user.username,
+          USERNAME: condition.USERNAME || user.username,
           TYPE_TRANS: ID_TIPO_TRANS_TURN
         };
 
@@ -192,6 +192,7 @@ export class TurnsResolver {
         // Filtrar por rango de fechas
         response = await getTurnsRepo().find({
           where: {
+            ...condition,
             CREATE_DATE: Between(condition.FECHA_DESDE, condition.FECHA_DESDE),
           },
         });
@@ -201,6 +202,7 @@ export class TurnsResolver {
         fechaHoy.setHours(0, 0, 0, 0);
         response = await getTurnsRepo().find({
           where: {
+            ...condition,
             CREATE_DATE: MoreThan(fechaHoy),
           },
         });
