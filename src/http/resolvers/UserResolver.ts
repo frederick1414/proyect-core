@@ -16,6 +16,9 @@ import {
   INACTIVE_GLOBAL,
 } from '../../config/constants'
 import { EncriptPass } from '../../helpers/passwordFunc'
+import { BUSINESS_ID_DEFAULT } from '../../constants/parameter'
+import { RolResolver, getRolRepo } from './RolResolver'
+import { QueryRolInput } from '../types/RolType'
 
 /**
  * It returns a repository for the User entity
@@ -35,9 +38,10 @@ export class UserResolver {
     @Ctx('user') user: SessionData
   ): Promise<User | Error> {
     try {
-      if (!isAuth(user)) return AuthorizationError;
+      // if (!isAuth(user)) return AuthorizationError;
 
-      const { USERNAME, /*PASSWORD */} = newUser
+      const { USERNAME, PASSWORD } = newUser
+      const BUSINESS_ID  = user ? user.businessId : BUSINESS_ID_DEFAULT
 
       let pathFile = null
 
@@ -47,25 +51,40 @@ export class UserResolver {
         },
       })
 
+
+
+      const rol = await getRolRepo().find({ where: {BUSINESS_ID ,NAME:'USER' }})
+      
+      if (rol instanceof Error) {
+        Error(rol.message)
+      }
+
       if (userExist) return Error(`User '${USERNAME}' is already registered.`)
 
       // newUser.PASSWORD = await EncriptPass(PASSWORD)
+
 
       const userData = {
         ...newUser,
         STATUS: ACTIVE_GLOBAL,
         CREATED_DATE: new Date(),
         CREATED_USER: user?.username || 'TEST',
-        IMAGE: pathFile,
+        // IMAGE: pathFile,
+        BUSINESS_ID: newUser.BUSINESS_ID || BUSINESS_ID_DEFAULT,
+        ROL_ID:rol[0].ROL_ID
+
       }
+
+
+      console.log('userDatacondition',userData)
 
       const data = await getUserRepository().insert(userData)
 
-      const [insertedUser] = await getUserRepository().find(data.identifiers[0])
+      // const [insertedUser] = await getUserRepository().find(data.identifiers[0])
 
-      delete insertedUser.PASSWORD
+      // delete insertedUser.PASSWORD
 
-      return insertedUser
+      return userData
     } catch (e) {
       console.log(`${ERR_LOG_MUTATION} Register: ${e}`)
       return new ApiGraphqlError(
@@ -95,7 +114,7 @@ export class UserResolver {
         userUpdate.PASSWORD = await EncriptPass(userUpdate.PASSWORD)
       }
 
-      
+
 
       // validar row
       const exist = await getUserRepository().find({

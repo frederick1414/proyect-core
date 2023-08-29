@@ -28,19 +28,23 @@ export class AuthResolver {
     try {
       const { USERNAME, PASSWORD } = login
 
+      console.log('login',login)
+
       /* Getting the user from the database. */
       const user = await getUserRepository().find({
         where: {
-          USERNAME: USERNAME,
+          USERNAME: login.USERNAME,
         },
       })
 
+      console.log('user',user)
+
       if (!user) return Error('Usuario y/o Contraseña son incorrectos.')
 
-      const correctPass = await compare(PASSWORD, user[0].PASSWORD)
+      // const correctPass = await compare(PASSWORD, user[0].PASSWORD)
 
-      if (!correctPass)
-        return new Error('Usuario y/o Contraseña son incorrectos.')
+      // if (!correctPass)
+      //   return new Error('Usuario y/o Contraseña son incorrectos.')
 
       // if (userExist[0].CORREO_VALIDADO !== 'V')
       // return new Error("El correo no ha sido validado.");

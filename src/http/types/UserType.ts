@@ -7,34 +7,34 @@ import { ACTIVE_GLOBAL } from '../../config/constants'
 })
 export class RegisterUserInput {
   @Field({
-    nullable: false,
+    nullable: true,
     description: '',
   })
-  ROL_ID: string
-
-  @Field({
-    nullable: false,
-    description: '',
-  })
-  BUSINESS_ID: string
+  ROL_ID?: string
 
   @Field({
     nullable: true,
     description: '',
   })
-  EMPLOYEE_ID: string
-
-  @Field({
-    nullable: false,
-    description: '',
-  })
-  USERNAME: string
+  BUSINESS_ID?: string
 
   @Field({
     nullable: true,
     description: '',
   })
-  EMAIL: string
+  EMPLOYEE_ID?: string
+
+  @Field({
+    nullable: false,
+    description: '',
+  })
+  USERNAME?: string
+
+  @Field({
+    nullable: true,
+    description: '',
+  })
+  EMAIL?: string
 
   @Field({
     nullable: false,
@@ -48,6 +48,16 @@ export class RegisterUserInput {
     defaultValue: ACTIVE_GLOBAL,
   })
   STATUS: string
+
+  
+  @Field({
+    nullable: true,
+    description: '',
+  })
+  PHONE: string
+
+
+
 }
 
 @InputType({
@@ -64,7 +74,7 @@ export class UpdateUserInput {
     nullable: true,
     description: '',
   })
-  ROL_ID: string
+  ROL_ID?: string
 
   @Field({
     nullable: true,
@@ -95,7 +105,7 @@ export class UpdateUserInput {
     description: '',
     defaultValue: ACTIVE_GLOBAL,
   })
-  STATUS: string
+  STATUS: string  
 }
 
 @InputType({
