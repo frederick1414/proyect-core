@@ -106,6 +106,12 @@ export class UpdateUserInput {
     defaultValue: ACTIVE_GLOBAL,
   })
   STATUS: string  
+
+
+  @Field({
+    nullable: true,
+  })
+  PHONE?: string  
 }
 
 @InputType({

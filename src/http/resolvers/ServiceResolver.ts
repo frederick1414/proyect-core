@@ -1,21 +1,10 @@
-import { SessionData, Upload } from './../../constants/generalTypes'
-import { Arg, Ctx, Mutation, Query, Resolver } from 'type-graphql'
-import { getConnection, getRepository, Repository } from 'typeorm'
-import { ERR_LOG_MUTATION, ERR_LOG_QUERY } from '../../config/generalErrors'
+import { SessionData } from './../../constants/generalTypes'
+import { Arg, Ctx, Query, Resolver } from 'type-graphql'
+import { getRepository, Repository } from 'typeorm'
+import { ERR_LOG_QUERY } from '../../config/generalErrors'
 import { HTTP_STATUS_BAD_REQUEST } from '../../config/statusCode'
 import { ApiGraphqlError, AuthorizationError } from '../../helpers/apiFunc'
-import { User } from '../../entity/User'
-import {
-    QueryUserInput,
-    RegisterUserInput,
-    UpdateUserInput,
-} from '../types/UserType'
 import { isAuth } from '../../helpers/authFunc'
-import {
-    ACTIVE_GLOBAL,
-    INACTIVE_GLOBAL,
-} from '../../config/constants'
-import { EncriptPass } from '../../helpers/passwordFunc'
 import { Service } from '../../entity/ServiceEntity'
 import { QueryServiceInput } from '../types/ServiceType'
 

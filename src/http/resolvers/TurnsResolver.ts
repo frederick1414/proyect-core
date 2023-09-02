@@ -6,9 +6,8 @@ import { SessionData } from "../../constants/generalTypes"
 import { AuthorizationError, ApiGraphqlError } from "../../helpers/apiFunc"
 import { isAuth } from "../../helpers/authFunc"
 import { Turns } from "../../entity/TurnsEntity"
-import { InserTurnsInput, QueryTurnsInput, QueryTurnsRangeInput, UpdateTurnsResponse } from "../types/TurnsType"
-import { ACTIVE_GLOBAL, EN_ESPERA, HOUR, ID_TIPO_TRANS_TURN, ONE, SECOND } from "../../config/constants"
-import { addMinutes } from "date-fns"
+import { QueryTurnsInput, QueryTurnsRangeInput, UpdateTurnsResponse } from "../types/TurnsType"
+import { EN_ESPERA, HOUR, ID_TIPO_TRANS_TURN, ONE, SECOND } from "../../config/constants"
 
 /**
  * It returns a repository for the User entity
@@ -26,7 +25,7 @@ export class TurnsResolver {
     @Arg('condition', () => QueryTurnsInput, {
       description: 'query Turns argument.',
       nullable: true,
-    })
+    }) 
     condition: QueryTurnsInput,
     @Ctx('user') user: SessionData
   ): Promise<Turns[] | Error> {
@@ -70,7 +69,13 @@ export class TurnsResolver {
 
       const currentTime = new Date();
 
-      const response = await this.GetTurnsRange({ BUSINESS_ID, TYPE_TRANS: ID_TIPO_TRANS_TURN }, user)
+      const response = await getTurnsRepo().find(
+
+        {
+          where: { BUSINESS_ID, TYPE_TRANS: ID_TIPO_TRANS_TURN }
+
+        })
+
       if (response instanceof Error) {
         return Error('error')
       }
@@ -97,21 +102,33 @@ export class TurnsResolver {
         }
 
 
+
+        const turnoDeHoy = await this.GetTurnsRange({ BUSINESS_ID, TYPE_TRANS: ID_TIPO_TRANS_TURN }, user)
+
+
+        if (turnoDeHoy instanceof Error) {
+          return Error(turnoDeHoy.message)
+        }
+
+
         const nextTime = new Date(maxTime.getTime() + WAITING_TIME * HOUR * SECOND);
-        const ESTATUS_ACTIVE = response.find((x) => x.ESTATUS === EN_ESPERA)
+        const EnEspera = turnoDeHoy.filter((item) => item.ESTATUS === EN_ESPERA)
         const turnsData = {
           ...condition,
           TURN_ID: (maxTurnId + ONE).toString(),
           ESTATUS: EN_ESPERA,
           CREATE_DATE: currentTime,
           CREATED_USER: user?.username || 'TEST',
-          TIME: TIME ? TIME : ESTATUS_ACTIVE ? nextTime : new Date(),
+          TIME: TIME || EnEspera?.length ? nextTime : new Date(),
           BUSINESS_ID: BUSINESS_ID || '001',
           USERNAME: condition.USERNAME || user.username,
           TYPE_TRANS: ID_TIPO_TRANS_TURN
         };
 
+
+
         const data = await getTurnsRepo().insert(turnsData);
+
 
         const result = await getTurnsRepo().find(data.identifiers[0]);
 
@@ -195,7 +212,7 @@ export class TurnsResolver {
             ...condition,
             CREATE_DATE: Between(condition.FECHA_DESDE, condition.FECHA_DESDE),
           },
-          order:{TIME:'ASC'}
+          order: { TIME: 'ASC' }
         });
       } else {
         // Filtrar por registros del día
@@ -206,7 +223,7 @@ export class TurnsResolver {
             ...condition,
             CREATE_DATE: MoreThan(fechaHoy),
           },
-          order:{TIME:'ASC'}
+          order: { TIME: 'ASC' }
         });
       }
 

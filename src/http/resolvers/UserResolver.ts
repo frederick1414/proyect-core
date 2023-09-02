@@ -52,8 +52,8 @@ export class UserResolver {
       })
 
 
-
-      const rol = await getRolRepo().find({ where: {BUSINESS_ID ,NAME:'USER' }})
+console.log('roles',user.roles)
+      const rol = await getRolRepo().find({ where: {BUSINESS_ID ,NAME:user.roles }})
       
       if (rol instanceof Error) {
         Error(rol.message)
@@ -285,4 +285,58 @@ export class UserResolver {
       )
     }
   }
+
+  
+  @Mutation(() => User, { description: 'Update user' })
+  async UpdateRolUser(
+    @Arg('userUpdate', () => UpdateUserInput, {
+      description: 'user args',
+    })
+    userUpdate: UpdateUserInput,
+    @Ctx('user') user: SessionData
+  ): Promise<User | Error> {
+    try {
+      if (!isAuth(user)) return AuthorizationError
+
+      const { USER_ID } = userUpdate
+      // validar row
+      const exist = await getUserRepository().find({
+        USER_ID,
+      })
+
+      if (!exist.length) {
+        return Error('The user trying to update does not exist.')
+      }
+
+      const userData = {
+        ...userUpdate,
+        UPDATED_USER: user.username,
+        UPDATED_DATE: new Date(),
+      }
+
+      await getUserRepository().update(
+        {
+          USER_ID,
+        },
+        userData
+      )
+
+      const [updatedUser] = await getUserRepository().find({
+        USER_ID,
+      })
+
+      delete updatedUser.PASSWORD
+
+      return updatedUser
+    } catch (e) {
+      console.log(`${ERR_LOG_MUTATION} UpdateUser: ${e}`)
+
+      return new ApiGraphqlError(
+        HTTP_STATUS_BAD_REQUEST,
+        'Failed to update user.',
+        e?.message
+      )
+    }
+  }
+
 }
