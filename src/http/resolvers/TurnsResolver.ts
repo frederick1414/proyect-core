@@ -25,7 +25,7 @@ export class TurnsResolver {
     @Arg('condition', () => QueryTurnsInput, {
       description: 'query Turns argument.',
       nullable: true,
-    }) 
+    })
     condition: QueryTurnsInput,
     @Ctx('user') user: SessionData
   ): Promise<Turns[] | Error> {
@@ -122,7 +122,7 @@ export class TurnsResolver {
           TIME: TIME || EnEspera?.length ? nextTime : new Date(),
           BUSINESS_ID: BUSINESS_ID || '001',
           USERNAME: condition.USERNAME || user.username,
-          TYPE_TRANS: ID_TIPO_TRANS_TURN
+          TYPE_TRANS: ID_TIPO_TRANS_TURN,
         };
 
 
@@ -236,6 +236,55 @@ export class TurnsResolver {
         e?.message
       );
     }
+  }
+
+
+  @Query(() => [Turns], {
+    description: 'Consultar Turnos',
+  })
+  async getAllTurns(
+    @Arg('condition', () => QueryTurnsRangeInput, {
+      description: 'query Turns argument.',
+      nullable: true,
+    })
+    condition: QueryTurnsRangeInput,
+    @Ctx('user') user: SessionData
+  ): Promise<Turns[] | Error> {
+    try {
+      if (!isAuth(user)) return AuthorizationError;
+
+      const turnRepository = getRepository(Turns);
+      let query = turnRepository.createQueryBuilder('turns');
+
+      const { FECHA_DESDE, FECHA_HASTA } = condition
+
+      if (FECHA_DESDE && FECHA_HASTA) {
+        // Filtrar por rango de fechas si se proporcionan startDate y endDate
+        query = query.where('turns.CREATE_DATE BETWEEN :FECHA_DESDE AND :FECHA_HASTA', {
+          FECHA_DESDE,
+          FECHA_HASTA,
+        });
+      } else {
+        // Si no se proporcionan fechas, traer todos los turnos
+        query = query.where('1 = 1'); // Condición siempre verdadera
+      }
+
+      query = query.orderBy('turns.TIME', 'ASC');
+      const results = await query.getMany();
+
+      // Transformar los valores no válidos de UPDATE_DATE a null
+      results.forEach((result) => {
+        if (result.UPDATE_DATE && result.UPDATE_DATE.toISOString() === '0000-00-00T00:00:00.000Z') {
+          result.UPDATE_DATE = null;
+        }
+      });
+
+      return results;
+    } catch (e) {
+      console.log(`${ERR_LOG_QUERY} GetTurns: ${e}`);
+      throw new Error('Error al consultar la información de los turnos.');
+    }
+
   }
 
 }

@@ -72,5 +72,23 @@ export class QueryEmployeesInput {
     @Field({
         nullable: true,
     })
-    UPDATE_DATE?: Date
+    UPDATED_DATE?: Date
+}
+
+
+
+@InputType({
+    description: 'para consultar service',
+})
+export class UpdateEmployeesInput extends QueryEmployeesInput {
+    @Field({
+        nullable: true,
+    })
+    FIRST_NAME?: string
+
+
+    @Field({
+        nullable: true,
+    })
+    WAITING_TIME?: number
 }

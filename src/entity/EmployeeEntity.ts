@@ -90,6 +90,13 @@ export class Employees extends BaseEntity<Employees> {
     @Field({
         nullable: true,
     })
+    @Column({ type: 'datetime' ,insert: false, update: true})
+    UPDATED_USER: Date
+
+
+    @Field({
+        nullable: true,
+    })
     @Column({ type: 'varchar' })
     WAITING_TIME?: number
 }

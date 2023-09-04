@@ -77,7 +77,7 @@ export class Turns extends BaseEntity<Turns> {
         nullable: true,
         description: '',
     })
-    @Column({ type: 'datetime', nullable: true })
+    @Column({ type: 'datetime',  insert: false, update: true  })
     UPDATE_DATE?: Date
 
 
