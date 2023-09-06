@@ -119,12 +119,11 @@ export class TurnsResolver {
           ESTATUS: EN_ESPERA,
           CREATE_DATE: currentTime,
           CREATED_USER: user?.username || 'TEST',
-          TIME: TIME || EnEspera?.length ? nextTime : new Date(),
+          TIME: TIME ? TIME : EnEspera?.length ? nextTime : new Date(),
           BUSINESS_ID: BUSINESS_ID || '001',
           USERNAME: condition.USERNAME || user.username,
           TYPE_TRANS: ID_TIPO_TRANS_TURN,
         };
-
 
 
         const data = await getTurnsRepo().insert(turnsData);
