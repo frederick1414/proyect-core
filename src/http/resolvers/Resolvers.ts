@@ -1,5 +1,6 @@
 import { AuthResolver } from './AuthResolver'
 import { BusinessResolver } from './BusinessResolver'
+import { ClientResolver } from './ClientResorver'
 import { EmployeesResolver } from './EmployeesResolver'
 import { RolResolver } from './RolResolver'
 import { ServiceResolver } from './ServiceResolver'
@@ -13,4 +14,5 @@ export const resolvers = [
     ServiceResolver,
     EmployeesResolver,
     TurnsResolver,
-    RolResolver] as const
+    RolResolver,
+    ClientResolver] as const

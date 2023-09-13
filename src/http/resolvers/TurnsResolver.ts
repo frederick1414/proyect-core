@@ -1,5 +1,5 @@
 import { Resolver, Query, Arg, Ctx, Mutation } from "type-graphql"
-import { Between, MoreThan, Repository, getRepository } from "typeorm"
+import { Between, MoreThan, Repository, getConnection, getRepository } from "typeorm"
 import { ERR_LOG_MUTATION, ERR_LOG_QUERY } from "../../config/generalErrors"
 import { HTTP_STATUS_BAD_REQUEST } from "../../config/statusCode"
 import { SessionData } from "../../constants/generalTypes"
@@ -7,7 +7,8 @@ import { AuthorizationError, ApiGraphqlError } from "../../helpers/apiFunc"
 import { isAuth } from "../../helpers/authFunc"
 import { Turns } from "../../entity/TurnsEntity"
 import { QueryTurnsInput, QueryTurnsRangeInput, UpdateTurnsResponse } from "../types/TurnsType"
-import { EN_ESPERA, HOUR, ID_TIPO_TRANS_TURN, ONE, SECOND } from "../../config/constants"
+import { ACTIVE_GLOBAL, EN_ESPERA, HOUR, ID_TIPO_TRANS_TURN, ONE, SECOND } from "../../config/constants"
+import { ClientResolver, getClientRepo } from "./ClientResorver"
 
 /**
  * It returns a repository for the User entity
@@ -155,8 +156,37 @@ export class TurnsResolver {
     condition: QueryTurnsInput,
     @Ctx('user') user: SessionData
   ): Promise<UpdateTurnsResponse | Error> {
+    const _client = new ClientResolver()
+    const { businessId: BUSINESS_ID } = user
+    const { USERNAME } = condition
+
+
     try {
+
       if (!isAuth(user)) return AuthorizationError;
+
+      if (condition.ESTATUS === ACTIVE_GLOBAL) {
+
+
+        const cliente = await getClientRepo().find(
+          {
+            where: { BUSINESS_ID, USERNAME },
+            order: { CLIENT_ID: 'DESC' }
+          })
+
+          console.log('cliente',cliente[0])
+
+        if (!cliente?.length) {
+          const client = await _client.InsertClient(condition, user)
+
+          if (client instanceof Error) {
+            return Error(client.message)
+          }
+
+          console.log(client)
+        }
+      }
+
 
       const updateData = {
         ...condition,
@@ -164,16 +194,16 @@ export class TurnsResolver {
         UPDATE_DATE: new Date(),
       }
 
-      const data = await getTurnsRepo().update(
-        {
-          TURN_ID: condition.TURN_ID
-        },
-        { ...updateData }
-      )
+      // const data = await getTurnsRepo().update(
+      //   {
+      //     TURN_ID: condition.TURN_ID
+      //   },
+      //   { ...updateData }
+      // )
 
-      if (data instanceof Error) {
-        return Error('Error al actualizar turnos')
-      }
+      // if (data instanceof Error) {
+      //   return Error('Error al actualizar turnos')
+      // }
 
 
       return updateData;

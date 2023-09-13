@@ -99,4 +99,11 @@ export class Employees extends BaseEntity<Employees> {
     })
     @Column({ type: 'varchar' })
     WAITING_TIME?: number
+
+
+    @Field({
+        nullable: true,
+    })
+    @Column({ type: 'varchar' })
+    USERNAME?: string
 }

@@ -5,37 +5,42 @@ import { HTTP_STATUS_BAD_REQUEST } from "../../config/statusCode"
 import { SessionData } from "../../constants/generalTypes"
 import { AuthorizationError, ApiGraphqlError } from "../../helpers/apiFunc"
 import { isAuth } from "../../helpers/authFunc"
-import { Employees } from "../../entity/EmployeeEntity"
-import { QueryEmployeesInput, UpdateEmployeesInput, responseEmployees } from "../types/EmployeeType"
+import { Client } from "../../entity/ClientEntity"
+import { QueryClientInput } from "../types/ClientType"
+
 
 /**
  * It returns a repository for the User entity
  */
-export const getEmployeesRepo = (): Repository<Employees> => getRepository(Employees)
+export const getClientRepo = (): Repository<Client> => getRepository(Client)
 
-@Resolver(Employees)
-export class EmployeesResolver {
+@Resolver(Client)
+export class ClientResolver {
 
 
-    @Query(() => [Employees], {
+    @Query(() => [Client], {
         description: 'Consultar Empleadoa',
     })
-    async GetEmployee(
-        @Arg('condition', () => QueryEmployeesInput, {
-            description: 'query employees argument.',
+    async GetClient(
+        @Arg('condition', () => QueryClientInput, {
+            description: 'query Rol argument.',
             nullable: true,
         })
-        condition: QueryEmployeesInput,
+        condition: QueryClientInput,
         @Ctx('user') user: SessionData
-    ): Promise<Employees[] | Error> {
+    ): Promise<Client[] | Error> {
         try {
             if (!isAuth(user)) return AuthorizationError
 
-            const response = await getEmployeesRepo().find(condition)
+            const response = await getClientRepo().find(condition)
+
+            if (response instanceof Error) {
+                Error(response.message)
+            }
 
             return response
         } catch (e) {
-            console.log(`${ERR_LOG_QUERY} GetEmployee: ${e}`)
+            console.log(`${ERR_LOG_QUERY} GetClient: ${e}`)
             return new ApiGraphqlError(
                 HTTP_STATUS_BAD_REQUEST,
                 'Error when consulting user information.',
@@ -45,16 +50,14 @@ export class EmployeesResolver {
     }
 
 
-
-
-    @Mutation(() => Employees, { description: 'Update Employees' })
+    @Mutation(() => Client, { description: 'Update Client' })
     async UpdateEmployee(
-        @Arg('condition', () => UpdateEmployeesInput, {
-            description: 'Employees args',
+        @Arg('condition', () => QueryClientInput, {
+            description: 'Client args',
         })
-        condition: UpdateEmployeesInput,
+        condition: QueryClientInput,
         @Ctx('user') user: SessionData
-    ): Promise<responseEmployees | Error> {
+    ): Promise<Client | Error> {
         try {
             if (!isAuth(user)) return AuthorizationError
 
@@ -69,7 +72,7 @@ export class EmployeesResolver {
                 UPDATED_DATE: new Date(),
             }
 
-            await getEmployeesRepo().update(
+            await getClientRepo().update(
                 {
                     EMPLOYEE_ID,
                 },
@@ -78,7 +81,7 @@ export class EmployeesResolver {
 
             const response = {ok:''}
 
-            return response 
+            return response[0]
         } catch (e) {
             console.log(`${ERR_LOG_MUTATION} UpdateEmployee: ${e}`)
 
@@ -93,31 +96,27 @@ export class EmployeesResolver {
 
 
 
-    @Mutation(() => Employees, { description: 'Insert Employees' })
-    async InsertEmployee(
-        @Arg('condition', () => UpdateEmployeesInput, {
-            description: 'Employees args',
+    @Mutation(() => Client, { description: 'Insert Client' })
+    async InsertClient(
+        @Arg('condition', () => QueryClientInput, {
+            description: 'Client args',
         })
-        condition: UpdateEmployeesInput,
+        condition: QueryClientInput,
         @Ctx('user') user: SessionData
-    ): Promise<Employees[] | Error> {
+    ): Promise<Client[] | Error> {
         try {
             if (!isAuth(user)) return AuthorizationError
 
             const { businessId: BUSINESS_ID } = user
-            const {WAITING_TIME}= condition
-
 
             const employeeData = {
                 ...condition,
                 BUSINESS_ID,
-                WAITING_TIME: WAITING_TIME || 30,
-                UPDATED_USER: user.username,
-                UPDATED_DATE: new Date(),
+                CREATED_USER: user.username,
+                CREATED_DATE: new Date(),
             }
 
-            const response = await getEmployeesRepo().insert(employeeData)
-
+            const response = await getClientRepo().insert(employeeData)
 
             return response[0]
         } catch (e) {

@@ -141,6 +141,12 @@ export class QueryUserInput {
     nullable: true,
   })
   ROL_ID?: string
+
+  @Field({
+    description: '',
+    nullable: true,
+  })
+  STATUS?: string
 }
 
 

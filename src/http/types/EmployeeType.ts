@@ -1,4 +1,4 @@
-import { Field, InputType } from "type-graphql"
+import { Field, InputType, ObjectType } from "type-graphql"
 
 @InputType({
     description: 'para consultar service',
@@ -91,4 +91,15 @@ export class UpdateEmployeesInput extends QueryEmployeesInput {
         nullable: true,
     })
     WAITING_TIME?: number
+}
+
+
+@ObjectType({
+    description:'',
+})
+export class responseEmployees  {
+    @Field({
+        nullable: true,
+    })
+    ok?: string
 }

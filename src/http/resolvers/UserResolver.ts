@@ -1,4 +1,4 @@
-import { SessionData, Upload } from './../../constants/generalTypes'
+import { SessionData } from './../../constants/generalTypes'
 import { Arg, Ctx, Mutation, Query, Resolver } from 'type-graphql'
 import { getConnection, getRepository, Repository } from 'typeorm'
 import { ERR_LOG_MUTATION, ERR_LOG_QUERY } from '../../config/generalErrors'
@@ -16,9 +16,9 @@ import {
   INACTIVE_GLOBAL,
 } from '../../config/constants'
 import { EncriptPass } from '../../helpers/passwordFunc'
-import { BUSINESS_ID_DEFAULT } from '../../constants/parameter'
-import { RolResolver, getRolRepo } from './RolResolver'
-import { QueryRolInput } from '../types/RolType'
+import { BUSINESS_ID_DEFAULT, ROL_EMPLOYEE } from '../../constants/parameter'
+import {getRolRepo } from './RolResolver'
+import { EmployeesResolver } from './EmployeesResolver'
 
 /**
  * It returns a repository for the User entity
@@ -41,7 +41,7 @@ export class UserResolver {
       // if (!isAuth(user)) return AuthorizationError;
 
       const { USERNAME, PASSWORD } = newUser
-      const BUSINESS_ID  = user ? user.businessId : BUSINESS_ID_DEFAULT
+      const BUSINESS_ID = user ? user.businessId : BUSINESS_ID_DEFAULT
 
       let pathFile = null
 
@@ -52,9 +52,8 @@ export class UserResolver {
       })
 
 
-console.log('roles',user.roles)
-      const rol = await getRolRepo().find({ where: {BUSINESS_ID ,NAME:user.roles }})
-      
+      const rol = await getRolRepo().find({ where: { BUSINESS_ID, NAME: user.roles } })
+
       if (rol instanceof Error) {
         Error(rol.message)
       }
@@ -71,12 +70,12 @@ console.log('roles',user.roles)
         CREATED_USER: user?.username || 'TEST',
         // IMAGE: pathFile,
         BUSINESS_ID: newUser.BUSINESS_ID || BUSINESS_ID_DEFAULT,
-        ROL_ID:rol[0].ROL_ID
+        ROL_ID: rol[0].ROL_ID
 
       }
 
 
-      console.log('userDatacondition',userData)
+      console.log('userDatacondition', userData)
 
       const data = await getUserRepository().insert(userData)
 
@@ -105,8 +104,11 @@ console.log('roles',user.roles)
   ): Promise<User | Error> {
     try {
       if (!isAuth(user)) return AuthorizationError
+      const conection = getConnection()
+      const Employees = new EmployeesResolver()
+      const { USER_ID, ROL_ID, USERNAME } = userUpdate
 
-      const { USER_ID } = userUpdate
+      const BUSINESS_ID = user.businessId
 
       if (!userUpdate.PASSWORD) delete userUpdate.PASSWORD
 
@@ -114,9 +116,57 @@ console.log('roles',user.roles)
         userUpdate.PASSWORD = await EncriptPass(userUpdate.PASSWORD)
       }
 
+      const queryBuilder = conection.createQueryBuilder()
+        .select('MAX(EMPLOYEE_ID)', 'max_id')
+        .from('employees', 'e') 
+        .where('e.BUSINESS_ID = :businessId', { businessId: BUSINESS_ID });
+
+      const result = await queryBuilder.getRawOne();
+
+      const SECUENCIA = Number(result.max_id)
+
+      if (ROL_ID === ROL_EMPLOYEE) {
+
+        const _usuario = await getUserRepository().find(
+          {
+            where: {
+              USER_ID
+
+            }
+            ,
+          })
+
+        if (_usuario instanceof Error) {
+          return Error(_usuario.message)
+        }
+
+        const {
+          PHONE,
+          EMAIL,
+          STATUS: ESTATUS,
+          USERNAME,
+        } = _usuario[0]
+
+        const EMPLOYEE_ID = SECUENCIA + 1
+        const CREATED_DATE = new Date()
+        const CREATED_USER = user.username
+
+        const condition = {
+          EMPLOYEE_ID: EMPLOYEE_ID?.toString(),
+          ESTATUS,
+          PHONE_NUMBER: PHONE,
+          USERNAME,
+          EMAIL,
+          USER_ID,
+          ROL_ID,
+          CREATED_DATE,
+          CREATED_USER,
+        }
+
+        await Employees.InsertEmployee(condition, user)
+      }
 
 
-      // validar row
       const exist = await getUserRepository().find({
         USER_ID,
       })
@@ -125,7 +175,6 @@ console.log('roles',user.roles)
         return Error('The user trying to update does not exist.')
       }
 
-      // check if the email and user aliases already exist
       if (userUpdate.EMAIL) {
         const userEmail = await getConnection()
           .createQueryBuilder(User, 'u')
@@ -158,6 +207,7 @@ console.log('roles',user.roles)
 
       const userData = {
         ...userUpdate,
+        EMPLOYEE_ID: SECUENCIA?.toString() || null,
         UPDATED_USER: user.username,
         UPDATED_DATE: new Date(),
       }
@@ -286,7 +336,7 @@ console.log('roles',user.roles)
     }
   }
 
-  
+
   @Mutation(() => User, { description: 'Update user' })
   async UpdateRolUser(
     @Arg('userUpdate', () => UpdateUserInput, {

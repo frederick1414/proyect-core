@@ -39,12 +39,12 @@ export class AuthResolver {
 
       console.log('user',user)
 
-      if (!user) return Error('Usuario y/o Contraseña son incorrectos.')
+      if (!user?.length) return Error('Usuario y/o Contraseña son incorrectos.')
 
-      // const correctPass = await compare(PASSWORD, user[0].PASSWORD)
+       const correctPass = await compare(PASSWORD, user[0].PASSWORD)
 
-      // if (!correctPass)
-      //   return new Error('Usuario y/o Contraseña son incorrectos.')
+       if (!correctPass)
+         return new Error('Usuario y/o Contraseña son incorrectos.')
 
       // if (userExist[0].CORREO_VALIDADO !== 'V')
       // return new Error("El correo no ha sido validado.");
