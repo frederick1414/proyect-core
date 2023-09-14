@@ -51,7 +51,7 @@ export class ClientResolver {
 
 
     @Mutation(() => Client, { description: 'Update Client' })
-    async UpdateEmployee(
+    async UpdateClient(
         @Arg('condition', () => QueryClientInput, {
             description: 'Client args',
         })
@@ -62,32 +62,35 @@ export class ClientResolver {
             if (!isAuth(user)) return AuthorizationError
 
             const { businessId: BUSINESS_ID } = user
-            const { EMPLOYEE_ID } = condition
+            const { CLIENT_ID } = condition
 
 
-            const employeeData = {
+            const clientUpdate = {
                 ...condition,
                 BUSINESS_ID,
                 UPDATED_USER: user.username,
                 UPDATED_DATE: new Date(),
             }
 
-            await getClientRepo().update(
+            const response = await getClientRepo().update(
                 {
-                    EMPLOYEE_ID,
+                    CLIENT_ID,
                 },
-                employeeData
+                clientUpdate
             )
 
-            const response = {ok:''}
+            if (response instanceof Error) {
+                return Error(response.message)
+            }
 
-            return response[0]
+
+            return  clientUpdate[0] || ''
         } catch (e) {
-            console.log(`${ERR_LOG_MUTATION} UpdateEmployee: ${e}`)
+            console.log(`${ERR_LOG_MUTATION} UpdateClient: ${e}`)
 
             return new ApiGraphqlError(
                 HTTP_STATUS_BAD_REQUEST,
-                'Failed to update user.',
+                'Failed to update Client.',
                 e?.message
             )
         }
@@ -109,14 +112,14 @@ export class ClientResolver {
 
             const { businessId: BUSINESS_ID } = user
 
-            const employeeData = {
+            const clientUpdate = {
                 ...condition,
                 BUSINESS_ID,
                 CREATED_USER: user.username,
                 CREATED_DATE: new Date(),
             }
 
-            const response = await getClientRepo().insert(employeeData)
+            const response = await getClientRepo().insert(clientUpdate)
 
             return response[0]
         } catch (e) {
