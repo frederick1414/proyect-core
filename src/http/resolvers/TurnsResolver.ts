@@ -194,16 +194,16 @@ export class TurnsResolver {
         UPDATE_DATE: new Date(),
       }
 
-      // const data = await getTurnsRepo().update(
-      //   {
-      //     TURN_ID: condition.TURN_ID
-      //   },
-      //   { ...updateData }
-      // )
+      const data = await getTurnsRepo().update(
+        {
+          TURN_ID: condition.TURN_ID
+        },
+        { ...updateData }
+      )
 
-      // if (data instanceof Error) {
-      //   return Error('Error al actualizar turnos')
-      // }
+      if (data instanceof Error) {
+        return Error('Error al actualizar turnos')
+      }
 
 
       return updateData;

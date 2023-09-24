@@ -16,7 +16,7 @@ import {
   INACTIVE_GLOBAL,
 } from '../../config/constants'
 import { EncriptPass } from '../../helpers/passwordFunc'
-import { BUSINESS_ID_DEFAULT, ROL_EMPLOYEE } from '../../constants/parameter'
+import { BUSINESS_ID_DEFAULT, ROL_EMPLOYEE, ROL_USER_DEFAULT } from '../../constants/parameter'
 import {getRolRepo } from './RolResolver'
 import { EmployeesResolver } from './EmployeesResolver'
 
@@ -41,7 +41,9 @@ export class UserResolver {
       // if (!isAuth(user)) return AuthorizationError;
 
       const { USERNAME, PASSWORD } = newUser
-      const BUSINESS_ID = user ? user.businessId : BUSINESS_ID_DEFAULT
+      // newUser.PASSWORD = await EncriptPass(PASSWORD)
+
+      // const BUSINESS_ID = user ? user.businessId : BUSINESS_ID_DEFAULT
 
       let pathFile = null
 
@@ -52,15 +54,14 @@ export class UserResolver {
       })
 
 
-      const rol = await getRolRepo().find({ where: { BUSINESS_ID, NAME: user.roles } })
+      // const rol = await getRolRepo().find({ where: { BUSINESS_ID, NAME: user.roles } })
 
-      if (rol instanceof Error) {
-        Error(rol.message)
-      }
+      // if (rol instanceof Error) {
+      //   Error(rol.message)
+      // }
 
       if (userExist) return Error(`User '${USERNAME}' is already registered.`)
 
-      // newUser.PASSWORD = await EncriptPass(PASSWORD)
 
 
       const userData = {
@@ -70,8 +71,7 @@ export class UserResolver {
         CREATED_USER: user?.username || 'TEST',
         // IMAGE: pathFile,
         BUSINESS_ID: newUser.BUSINESS_ID || BUSINESS_ID_DEFAULT,
-        ROL_ID: rol[0].ROL_ID
-
+        ROL_ID: ROL_USER_DEFAULT
       }
 
 

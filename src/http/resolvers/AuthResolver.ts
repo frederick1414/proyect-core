@@ -41,7 +41,7 @@ export class AuthResolver {
 
       if (!user?.length) return Error('Usuario y/o Contraseña son incorrectos.')
 
-       const correctPass = await compare(PASSWORD, user[0].PASSWORD)
+       const correctPass =   user[0].PASSWORD === login.PASSWORD ? true :  await compare(PASSWORD, user[0].PASSWORD)
 
        if (!correctPass)
          return new Error('Usuario y/o Contraseña son incorrectos.')

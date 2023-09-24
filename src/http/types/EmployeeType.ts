@@ -91,6 +91,11 @@ export class UpdateEmployeesInput extends QueryEmployeesInput {
         nullable: true,
     })
     WAITING_TIME?: number
+
+    @Field({
+        nullable: true,
+    })
+    USERNAME?:string
 }
 
 
