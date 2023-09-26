@@ -6,9 +6,10 @@ import { SessionData } from "../../constants/generalTypes"
 import { AuthorizationError, ApiGraphqlError } from "../../helpers/apiFunc"
 import { isAuth } from "../../helpers/authFunc"
 import { Turns } from "../../entity/TurnsEntity"
-import { QueryTurnsInput, QueryTurnsRangeInput, UpdateTurnsResponse } from "../types/TurnsType"
+import { QueryTurnsInput, QueryTurnsInputInsert, QueryTurnsRangeInput, UpdateTurnsResponse, reponse } from "../types/TurnsType"
 import { ACTIVE_GLOBAL, EN_ESPERA, HOUR, ID_TIPO_TRANS_TURN, ONE, SECOND } from "../../config/constants"
 import { ClientResolver, getClientRepo } from "./ClientResorver"
+import { ServiceResolver, getServiceRepo } from "./ServiceResolver"
 
 /**
  * It returns a repository for the User entity
@@ -56,16 +57,18 @@ export class TurnsResolver {
     description: 'User Registration',
   })
   async RegisterTurns(
-    @Arg('condition', () => QueryTurnsInput, {
+    @Arg('condition', () => QueryTurnsInputInsert, {
       description: 'condition para consultar',
     })
-    condition: QueryTurnsInput,
+    condition: QueryTurnsInputInsert,
     @Ctx('user') user: SessionData
   ): Promise<Turns | Error> {
     try {
       if (!isAuth(user)) return AuthorizationError;
 
-      const { WAITING_TIME, TIME } = condition
+
+      const _service = new ServiceResolver()
+      const { WAITING_TIME, TIME, SERVICES } = condition
       const { businessId: BUSINESS_ID } = user
 
       const currentTime = new Date();
@@ -104,35 +107,72 @@ export class TurnsResolver {
 
 
 
-        const turnoDeHoy = await this.GetTurnsRange({ BUSINESS_ID, TYPE_TRANS: ID_TIPO_TRANS_TURN }, user)
+        const turnoAnterio = await this.getLastTurnByTIME(BUSINESS_ID)
+        console.log('data', turnoAnterio)
+        // GetTurnsRange({ BUSINESS_ID, TYPE_TRANS: ID_TIPO_TRANS_TURN }, user)
 
-
-        if (turnoDeHoy instanceof Error) {
-          return Error(turnoDeHoy.message)
+        if (turnoAnterio instanceof Error) {
+          return Error(turnoAnterio.message)
         }
 
 
-        const nextTime = new Date(maxTime.getTime() + WAITING_TIME * HOUR * SECOND);
-        const EnEspera = turnoDeHoy.filter((item) => item.ESTATUS === EN_ESPERA)
+
+
+        let _total = 0
+        if (SERVICES && !TIME) {
+
+          for await (const item of SERVICES) {
+
+            const serviceSelect = await getServiceRepo().find({ where: { service_id: item?.SERVICE_ID } })
+
+            if (serviceSelect instanceof Error) {
+              return Error(serviceSelect.message)
+            }
+
+            _total += serviceSelect[0].TIME
+            const conditionInserService = {
+              ...serviceSelect
+            }
+          }
+
+        }
+        let turnoAnterioOk: any = new Date()
+        let ok = false
+        if (turnoAnterio?.ok) {
+          turnoAnterioOk = turnoAnterio.TIMETWO
+          ok = true
+        }
+
+        console.log('turnoAnterioOk', turnoAnterioOk)
+
+        const _total_service_time = _total || WAITING_TIME
+
+
+        const nextTime = new Date(turnoAnterioOk.getTime() + _total_service_time * HOUR * SECOND);
+        console.log('nextTime', nextTime)
+        console.log('ok',ok)
         const turnsData = {
           ...condition,
           TURN_ID: (maxTurnId + ONE).toString(),
           ESTATUS: EN_ESPERA,
           CREATE_DATE: currentTime,
           CREATED_USER: user?.username || 'TEST',
-          TIME: TIME ? TIME : EnEspera?.length ? nextTime : new Date(),
+          TIME: ok ? turnoAnterioOk : new Date(), //timepo de inicio
+          TIMETWO: TIME ? TIME : nextTime ,///tiempo final
           BUSINESS_ID: BUSINESS_ID || '001',
           USERNAME: condition.USERNAME || user.username,
           TYPE_TRANS: ID_TIPO_TRANS_TURN,
         };
 
+        // console.log('turnos Data')
 
-        const data = await getTurnsRepo().insert(turnsData);
+        console.log('turnsData', turnsData)
+        await getTurnsRepo().insert(turnsData);
 
 
-        const result = await getTurnsRepo().find(data.identifiers[0]);
+        // const result = await getTurnsRepo().find(data.identifiers[0]);
 
-        return result[0];
+        return turnsData
       }
 
     } catch (e) {
@@ -174,7 +214,7 @@ export class TurnsResolver {
             order: { CLIENT_ID: 'DESC' }
           })
 
-          console.log('cliente',cliente[0])
+        console.log('cliente', cliente[0])
 
         if (!cliente?.length) {
           const client = await _client.InsertClient(condition, user)
@@ -193,6 +233,7 @@ export class TurnsResolver {
         UPDATED_USER: user.username,
         UPDATE_DATE: new Date(),
       }
+
 
       const data = await getTurnsRepo().update(
         {
@@ -316,4 +357,40 @@ export class TurnsResolver {
 
   }
 
+
+
+
+  @Query(() => reponse, {
+    description: 'Consultar el último turno registrado por CREATE_DATE',
+  })
+  async getLastTurnByTIME(
+    @Arg('BUSINESS_ID') BUSINESS_ID: string,
+    @Arg('TYPE_TRANS') TYPE_TRANS?: string
+  ): Promise<reponse | Error> {
+    const TYPETRANS = ID_TIPO_TRANS_TURN
+    const turnsRepo = getTurnsRepo(); // Obtén el repositorio de los turnos
+
+    // Realiza la consulta para encontrar el último turno por CREATE_DATE
+    const lastTurn = await turnsRepo
+      .createQueryBuilder('turns')
+      .where('turns.BUSINESS_ID = :businessId', { businessId: BUSINESS_ID })
+      .andWhere('turns.TYPE_TRANS = :typeTrans', { typeTrans: TYPETRANS })
+      .andWhere('turns.ESTATUS = :pestatus', { pestatus: 'S' }) ///en espera
+      .orderBy('turns.TIMETWO', 'DESC') // Ordena por CREATE_DATE en orden descendente
+      .getOne();
+
+    if (lastTurn instanceof Error) {
+      return Error(lastTurn.message);
+    }
+
+    const currentDate = new Date().toISOString().split('T')[0];
+    const lastTurnDate = lastTurn?.TIMETWO?.toISOString().split('T')[0];
+    console.log('currentDate', currentDate)
+
+    if (lastTurnDate !== currentDate) {
+      return { ...lastTurn, ok: false };
+    }
+
+    return { ...lastTurn, ok: true };
+  }
 }

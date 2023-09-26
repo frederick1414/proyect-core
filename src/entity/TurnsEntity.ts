@@ -59,6 +59,15 @@ export class Turns extends BaseEntity<Turns> {
     @Column({ type: 'datetime', insert: true, update: false })
     TIME?: Date
 
+    
+    @Field({
+        nullable: true,
+        description: '',
+    })
+    @Column({ type: 'datetime', insert: true, update: false })
+    TIMETWO?: Date
+
+
     @Field({
         nullable: true,
         description: '',

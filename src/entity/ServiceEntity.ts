@@ -42,6 +42,13 @@ export class Service extends BaseEntity<Service> {
     nullable: true,
     description: '',
   })
+  @Column({ type: 'int'})
+  TIME?: number
+
+  @Field({
+    nullable: true,
+    description: '',
+  })
   @Column({ type: 'datetime', insert: true, update: false })
   CREATED_DATE: Date
 
