@@ -51,6 +51,13 @@ export class Turns extends BaseEntity<Turns> {
     @Column({ type: 'char', length: 1 })
     ESTATUS?: string
 
+    
+    @Field({
+        nullable: true,
+        description: '',
+    })
+    @Column({ type: 'int'})
+    WAITING_TIME?: number
 
     @Field({
         nullable: true,

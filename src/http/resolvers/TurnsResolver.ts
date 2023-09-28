@@ -67,8 +67,8 @@ export class TurnsResolver {
       if (!isAuth(user)) return AuthorizationError;
 
 
-      const _service = new ServiceResolver()
       const { WAITING_TIME, TIME, SERVICES } = condition
+console.log('WAITING_TIME',WAITING_TIME)      
       const { businessId: BUSINESS_ID } = user
 
       const currentTime = new Date();
@@ -118,24 +118,24 @@ export class TurnsResolver {
 
 
 
-        let _total = 0
-        if (SERVICES && !TIME) {
+        // let _total = 0
+        // if (SERVICES && !TIME) {
 
-          for await (const item of SERVICES) {
+        // for await (const item of SERVICES) {
 
-            const serviceSelect = await getServiceRepo().find({ where: { service_id: item?.SERVICE_ID } })
+        //   const serviceSelect = await getServiceRepo().find({ where: { service_id: item?.SERVICE_ID } })
 
-            if (serviceSelect instanceof Error) {
-              return Error(serviceSelect.message)
-            }
+        //   if (serviceSelect instanceof Error) {
+        //     return Error(serviceSelect.message)
+        //   }
 
-            _total += serviceSelect[0].TIME
-            const conditionInserService = {
-              ...serviceSelect
-            }
-          }
+        //   _total += serviceSelect[0].TIME
+        //   const conditionInserService = {
+        //     ...serviceSelect
+        //   }
+        // }
 
-        }
+        // }
         let turnoAnterioOk: any = new Date()
         let ok = false
         if (turnoAnterio?.ok) {
@@ -145,12 +145,11 @@ export class TurnsResolver {
 
         console.log('turnoAnterioOk', turnoAnterioOk)
 
-        const _total_service_time = _total || WAITING_TIME
 
 
-        const nextTime = new Date(turnoAnterioOk.getTime() + _total_service_time * HOUR * SECOND);
+        const nextTime = new Date(turnoAnterioOk.getTime() + WAITING_TIME * HOUR * SECOND);
         console.log('nextTime', nextTime)
-        console.log('ok',ok)
+        console.log('ok', ok)
         const turnsData = {
           ...condition,
           TURN_ID: (maxTurnId + ONE).toString(),
@@ -158,7 +157,7 @@ export class TurnsResolver {
           CREATE_DATE: currentTime,
           CREATED_USER: user?.username || 'TEST',
           TIME: ok ? turnoAnterioOk : new Date(), //timepo de inicio
-          TIMETWO: TIME ? TIME : nextTime ,///tiempo final
+          TIMETWO: TIME ? TIME : nextTime,///tiempo final
           BUSINESS_ID: BUSINESS_ID || '001',
           USERNAME: condition.USERNAME || user.username,
           TYPE_TRANS: ID_TIPO_TRANS_TURN,

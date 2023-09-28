@@ -60,6 +60,11 @@ export class QueryTurnsInputInsert {
   @Field({
     nullable: true,
   })
+  TIME_TIME?: Date
+  
+  @Field({
+    nullable: true,
+  })
   PHONE?: string
 
   @Field({
