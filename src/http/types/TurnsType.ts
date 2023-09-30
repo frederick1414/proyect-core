@@ -60,7 +60,7 @@ export class QueryTurnsInputInsert {
   @Field({
     nullable: true,
   })
-  TIME_TIME?: Date
+  TIME_INIT?: Date
   
   @Field({
     nullable: true,

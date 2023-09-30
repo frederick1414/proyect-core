@@ -62,7 +62,7 @@ export class EmployeesResolver {
             const { EMPLOYEE_ID } = condition
 
 
-            const employeeData = {
+            const employeeData:any = {
                 ...condition,
                 BUSINESS_ID,
                 UPDATED_USER: user.username,
@@ -76,9 +76,9 @@ export class EmployeesResolver {
                 employeeData
             )
 
-            const response = {ok:''}
+        
 
-            return response 
+            return employeeData
         } catch (e) {
             console.log(`${ERR_LOG_MUTATION} UpdateEmployee: ${e}`)
 

@@ -67,7 +67,7 @@ export class TurnsResolver {
       if (!isAuth(user)) return AuthorizationError;
 
 
-      const { WAITING_TIME, TIME, SERVICES } = condition
+      const { WAITING_TIME, TIME, SERVICES ,TIME_INIT} = condition
 console.log('WAITING_TIME',WAITING_TIME)      
       const { businessId: BUSINESS_ID } = user
 
@@ -156,7 +156,7 @@ console.log('WAITING_TIME',WAITING_TIME)
           ESTATUS: EN_ESPERA,
           CREATE_DATE: currentTime,
           CREATED_USER: user?.username || 'TEST',
-          TIME: ok ? turnoAnterioOk : new Date(), //timepo de inicio
+          TIME: TIME_INIT ? TIME_INIT :  ok ? turnoAnterioOk : new Date(), //timepo de inicio
           TIMETWO: TIME ? TIME : nextTime,///tiempo final
           BUSINESS_ID: BUSINESS_ID || '001',
           USERNAME: condition.USERNAME || user.username,
@@ -164,7 +164,7 @@ console.log('WAITING_TIME',WAITING_TIME)
         };
 
         // console.log('turnos Data')
-
+delete turnsData?.TIME_INIT
         console.log('turnsData', turnsData)
         await getTurnsRepo().insert(turnsData);
 
