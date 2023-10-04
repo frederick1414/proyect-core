@@ -32,6 +32,11 @@ export class QueryTurnsInputInsert {
   @Field({
     nullable: true,
   })
+  TYPE_TRANS_SERVICES?: string
+
+  @Field({
+    nullable: true,
+  })
   EMPLOYEE_ID?: string
 
   @Field({
@@ -157,9 +162,13 @@ export class QueryTurnsInput {
 
   @Field({
     nullable: true,
-  })
+  }) 
   CREATE_DATE?: Date
 
+  @Field({
+    nullable: true,
+  })
+  TYPE_TRANS_SERVICES?:string
   @Field({
     nullable: true,
   })
@@ -224,6 +233,12 @@ export class QueryTurnsRangeInput extends QueryTurnsInput {
     nullable: true,
   })
   FECHA_HASTA?: Date
+
+
+  @Field({
+    nullable: true,
+  })
+  FILTER?: boolean
 }
 
 

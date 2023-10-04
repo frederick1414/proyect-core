@@ -26,6 +26,13 @@ export class Turns extends BaseEntity<Turns> {
         nullable: true,
         description: '',
     })
+    @Column({ type: 'varchar', length: 10 })
+    TYPE_TRANS_SERVICES?: string
+
+    @Field({
+        nullable: true,
+        description: '',
+    })
     @Column({ type: 'varchar', length: 255 })
     EMPLOYEE_ID?: string
 

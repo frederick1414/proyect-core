@@ -67,8 +67,8 @@ export class TurnsResolver {
       if (!isAuth(user)) return AuthorizationError;
 
 
-      const { WAITING_TIME, TIME, SERVICES ,TIME_INIT} = condition
-console.log('WAITING_TIME',WAITING_TIME)      
+      const { WAITING_TIME, TIME, SERVICES, TIME_INIT, EMPLOYEE_ID } = condition
+      console.log('WAITING_TIME', WAITING_TIME)
       const { businessId: BUSINESS_ID } = user
 
       const currentTime = new Date();
@@ -107,7 +107,7 @@ console.log('WAITING_TIME',WAITING_TIME)
 
 
 
-        const turnoAnterio = await this.getLastTurnByTIME(BUSINESS_ID)
+        const turnoAnterio = await this.getLastTurnByTIME(BUSINESS_ID, EMPLOYEE_ID)
         console.log('data', turnoAnterio)
         // GetTurnsRange({ BUSINESS_ID, TYPE_TRANS: ID_TIPO_TRANS_TURN }, user)
 
@@ -156,15 +156,16 @@ console.log('WAITING_TIME',WAITING_TIME)
           ESTATUS: EN_ESPERA,
           CREATE_DATE: currentTime,
           CREATED_USER: user?.username || 'TEST',
-          TIME: TIME_INIT ? TIME_INIT :  ok ? turnoAnterioOk : new Date(), //timepo de inicio
+          TIME: TIME_INIT ? TIME_INIT : ok ? turnoAnterioOk : new Date(), //timepo de inicio
           TIMETWO: TIME ? TIME : nextTime,///tiempo final
           BUSINESS_ID: BUSINESS_ID || '001',
           USERNAME: condition.USERNAME || user.username,
           TYPE_TRANS: ID_TIPO_TRANS_TURN,
+          TYPE_TRANS_SERVICES: condition?.TYPE_TRANS_SERVICES
         };
 
         // console.log('turnos Data')
-delete turnsData?.TIME_INIT
+        delete turnsData?.TIME_INIT
         console.log('turnsData', turnsData)
         await getTurnsRepo().insert(turnsData);
 
@@ -274,6 +275,11 @@ delete turnsData?.TIME_INIT
 
       let response;
 
+      const newcondition = { ...condition }
+      let { FILTER } = newcondition
+
+      delete condition.FILTER
+
       if (condition && condition.FECHA_DESDE && condition.FECHA_HASTA) {
         // Filtrar por rango de fechas
         response = await getTurnsRepo().find({
@@ -281,9 +287,11 @@ delete turnsData?.TIME_INIT
             ...condition,
             CREATE_DATE: Between(condition.FECHA_DESDE, condition.FECHA_DESDE),
           },
-          order: { TIME: 'ASC' }
+          order: FILTER ? { TURN_ID: 'ASC' } : { TIME: 'ASC' }
         });
-      } else {
+      } else if (condition) {
+
+
         // Filtrar por registros del día
         const fechaHoy = new Date();
         fechaHoy.setHours(0, 0, 0, 0);
@@ -292,7 +300,7 @@ delete turnsData?.TIME_INIT
             ...condition,
             CREATE_DATE: MoreThan(fechaHoy),
           },
-          order: { TIME: 'ASC' }
+          order: FILTER ? { TURN_ID: 'ASC' } : { TIME: 'ASC' }
         });
       }
 
@@ -364,7 +372,7 @@ delete turnsData?.TIME_INIT
   })
   async getLastTurnByTIME(
     @Arg('BUSINESS_ID') BUSINESS_ID: string,
-    @Arg('TYPE_TRANS') TYPE_TRANS?: string
+    @Arg('EMPLOYEE_ID') EMPLOYEE_ID?: string
   ): Promise<reponse | Error> {
     const TYPETRANS = ID_TIPO_TRANS_TURN
     const turnsRepo = getTurnsRepo(); // Obtén el repositorio de los turnos
@@ -375,6 +383,7 @@ delete turnsData?.TIME_INIT
       .where('turns.BUSINESS_ID = :businessId', { businessId: BUSINESS_ID })
       .andWhere('turns.TYPE_TRANS = :typeTrans', { typeTrans: TYPETRANS })
       .andWhere('turns.ESTATUS = :pestatus', { pestatus: 'S' }) ///en espera
+      .andWhere('turns.EMPLOYEE_ID = :pemployee', { pemployee: EMPLOYEE_ID }) ///en espera
       .orderBy('turns.TIMETWO', 'DESC') // Ordena por CREATE_DATE en orden descendente
       .getOne();
 
