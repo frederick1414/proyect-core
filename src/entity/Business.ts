@@ -40,6 +40,13 @@ export class Business extends BaseEntity<Business> {
     nullable: true,
     description: '',
   })
+  @Column({ type: 'varchar', length: 200 })
+  COLOR: string
+
+  @Field({
+    nullable: true,
+    description: '',
+  })
   @Column({ type: 'varchar', length: 25 })
   PHONE_1: string
 
