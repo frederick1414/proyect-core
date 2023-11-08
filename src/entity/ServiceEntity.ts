@@ -56,6 +56,23 @@ export class Service extends BaseEntity<Service> {
     nullable: true,
     description: '',
   })
+  @Column({ type: 'varchar', nullable:true })
+  
+  CREATED_USER?:string
+  
+
+  @Field({
+    nullable: true,
+    description: '',
+  })
+  @Column({ type: 'varchar', nullable:true })
+  
+  UPDATED_USER?:string
+
+  @Field({
+    nullable: true,
+    description: '',
+  })
   @Column({ type: 'datetime', insert: false, update: true })
   UPDATE_DATE: Date
 

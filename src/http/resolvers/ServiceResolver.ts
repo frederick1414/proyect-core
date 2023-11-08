@@ -1,7 +1,7 @@
 import { SessionData } from './../../constants/generalTypes'
-import { Arg, Ctx, Query, Resolver } from 'type-graphql'
+import { Arg, Ctx, Mutation, Query, Resolver } from 'type-graphql'
 import { getRepository, Repository } from 'typeorm'
-import { ERR_LOG_QUERY } from '../../config/generalErrors'
+import { ERR_LOG_MUTATION, ERR_LOG_QUERY } from '../../config/generalErrors'
 import { HTTP_STATUS_BAD_REQUEST } from '../../config/statusCode'
 import { ApiGraphqlError, AuthorizationError } from '../../helpers/apiFunc'
 import { isAuth } from '../../helpers/authFunc'
@@ -47,56 +47,53 @@ export class ServiceResolver {
     }
 
 
+    @Mutation(() => Service, { description: 'Upsert Services' })
+    async InsertService(
+        @Arg('condition', () => QueryServiceInput, {
+            description: 'Employees args',
+        })
+        condition: QueryServiceInput,
+        @Ctx('user') user: SessionData
+    ): Promise<Service[] | Error> {
+        try {
+            if (!isAuth(user)) return AuthorizationError
+
+            const { businessId: BUSINESS_ID } = user
 
 
+            const servisce = {
+                ...condition,
+                BUSINESS_ID,//
+                CREATED_USER: user.username,//
+                CREATED_DATE: new Date(),//
+            }
+
+            // service_id: string
+            // description: string
+            // BUSINESS_ID: string
+            // ESTATUS: string
+            // TIME?: number
+            // CREATED_DATE: Date
+            // UPDATE_DATE: Date
+            // EMPLOYEE_ID: string
+            // AMOUNT?:string
+          
+            // }s
+            
+
+            const response = await getServiceRepo().insert(servisce)
 
 
+            return response[0]
+        } catch (e) {
+            console.log(`${ERR_LOG_MUTATION} InsertEmployee: ${e}`)
 
+            return new ApiGraphqlError(
+                HTTP_STATUS_BAD_REQUEST,
+                'Failed to Insert Employee .',
+                e?.message
+            )
+        }
+    }
 
-
-
-
-
-    // @Mutation(() => Service, {
-    //     description: 'Service Registration',
-    // })
-    // async RegisterService(
-    //     @Arg('condition', () => RegisterUserInput, {
-    //         description: 'condition',
-    //     })
-    //     condition: RegisterUserInput,
-    //     @Ctx('user') user: SessionData
-    // ): Promise<Service | Error> {
-    //     try {
-    //         if (!isAuth(user)) return AuthorizationError;
-
-
-    //         let pathFile = null
-
-    //         const [serviceExist] = await getServiceRepo().find(condition)
-
-    //         if (serviceExist) {
-    //             return Error(`ya existe el service ${serviceExist.description}` )
-    //         }
-    //         const serviceData = {
-    //             ...condition,
-    //             STATUS: ACTIVE_GLOBAL,
-    //             CREATED_DATE: new Date(),
-    //         }
-
-    //         const data = await getServiceRepo().insert(serviceData)
-
-    //         const [insertedUser] = await getServiceRepo().find(data.identifiers[0])
-
-    //         console.log('insertedUser',insertedUser)
-    //         return insertedUser[0]
-    //     } catch (e) {
-    //         console.log(`${ERR_LOG_MUTATION} Register: ${e}`)
-    //         return new ApiGraphqlError(
-    //             HTTP_STATUS_BAD_REQUEST,
-    //             'Error creating service.',
-    //             e?.message
-    //         )
-    //     }
-    // }
 }

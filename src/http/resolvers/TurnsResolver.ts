@@ -9,7 +9,6 @@ import { Turns } from "../../entity/TurnsEntity"
 import { QueryTurnsInput, QueryTurnsInputInsert, QueryTurnsRangeInput, UpdateTurnsResponse, reponse } from "../types/TurnsType"
 import { ACTIVE_GLOBAL, EN_ESPERA, HOUR, ID_TIPO_TRANS_TURN, ONE, SECOND } from "../../config/constants"
 import { ClientResolver, getClientRepo } from "./ClientResorver"
-import { ServiceResolver, getServiceRepo } from "./ServiceResolver"
 
 /**
  * It returns a repository for the User entity
@@ -179,7 +178,7 @@ export class TurnsResolver {
       console.log(`${ERR_LOG_MUTATION} Register: ${e}`);
       return new ApiGraphqlError(
         HTTP_STATUS_BAD_REQUEST,
-        'Error creating user.',
+        'Error creating Turns.',
         e?.message
       );
     }

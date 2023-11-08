@@ -9,6 +9,10 @@ export class QueryEmployeesInput {
     })
     BUSINESS_ID?: string
 
+    @Field({
+        nullable: true,
+    })
+    USER_ID?: string
 
     @Field({
         nullable: true,
